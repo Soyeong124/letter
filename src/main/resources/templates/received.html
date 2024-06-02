@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Received Letters</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<h2>Received Letters</h2>
+<div th:each="letter : ${letters}">
+    <p>
+        <strong>Type:</strong> <span th:text="${letter.type}"></span><br/>
+        <strong>Comment:</strong> <span th:text="${letter.comment}"></span><br/>
+        <a th:href="@{/letter/{id}(id=${letter.id})}">View Letter</a>
+    </p>
+</div>
+<a th:href="@{/}">Back to Home</a>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" type="text/css" th:href="@{css/style.css}">
+</head>
+<body>
+<form th:action="@{/register}" method="post">
+    <table class="register">
+        <tr>
+            <td class="center-text"><h2>회원가입</h2></td>
+        </tr>
+        <tr>
+            <td>닉네임</td>
+        </tr>
+        <tr>
+
+            <td><input type="text" class="nickname" placeholder=" 닉네임은 바꿀 수 없어요" name="nickname" required></td>
+        </tr>
+<!--        에러 문구 추가 -->
+        <tr>
+            <td th:if="${nicknameError}" th:text="${nicknameError}" style="color: red;"></td>
+        </tr>
+
+        <tr>
+            <td>비밀번호 입력</td>
+        </tr>
+        <tr>
+
+            <td><input type="password" name="password" class="password" placeholder=" 비밀번호는 찾을 수 없어요" required></td>
+        </tr>
+        <tr>
+            <td>비밀번호 재입력</td>
+        </tr>
+        <tr>
+            <td><input type="password" name="confirmPassword" class="password" placeholder="신중하게 입력하세요" required></td>
+        </tr>
+<!--        일치여부 확인 에러 문구 추가-->
+        <tr>
+            <td th:if="${passwordError}" th:text="${passwordError}" style="color: red;"></td>
+        </tr>
+        <tr>
+            <td><button type="submit" class="btn">가입하기</button></td>
+        </tr>
+    </table>
+</form>
+<p th:if="${error}" th:text="${error}"></p>
+</body>
+</html>

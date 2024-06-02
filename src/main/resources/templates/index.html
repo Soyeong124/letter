@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>편지가 도착했습니다</title>
+    <link rel="stylesheet" type="text/css" th:href="@{css/style.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{css/bootstrap.min.css}">
+    <style>
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+        }
+        .letter-icon {
+            width: 50px;
+            height: 50px;
+        }
+        .letter-summary {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .letter-item {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .btn-custom {
+            font-size: 18px; /* 글자 크기 조정 */
+            padding: 10px 24px; /* 상하 10px, 좌우 24px 패딩 */
+            border-radius: 5px; /* 버튼 모서리 둥글게 */
+            margin-top: 10px; /* 위쪽 마진 */
+            background-color: #007bff; /* 버튼 배경 색상 */
+            color: white; /* 글자 색상 */
+            border: none; /* 테두리 제거 */
+            width: 100%; /* 버튼의 너비를 100%로 설정 */
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;
+        }
+        .btn-lg {
+            font-size: 20px; /* 큰 버튼의 글자 크기 조정 */
+            padding: 15px 30px; /* 큰 버튼의 패딩 조정 */
+            width: 100%; /* 버튼의 너비를 100%로 설정 */
+            margin-top: 10px; /* 위쪽 마진 */
+        }
+        .btn-primary, .btn-secondary {
+            margin-top: 10px; /* 기본 마진 설정 */
+        }
+        .btn-logout {
+            background-color: transparent;
+            border: none;
+            color: #333;
+            text-decoration: underline;
+            font-size: 16px;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container text-center">
+    <input type="hidden" id="isAuthenticated" th:value="${#authorization.expression('isAuthenticated()')}">
+    <div class="row mt-4">
+        <div class="col">
+            <h3>편지가 도착했습니다</h3>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <img src="/images/letter.png" alt="편지 아이콘" class="letter-icon">
+            <div class="letter-summary">
+                지금까지 <strong th:text="${totalLetters}">0</strong>건 편지를 전달했어요😊
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col text-center">
+            <a th:if="${#authorization.expression('isAuthenticated()')}" th:href="@{/letters}" class="btn-custom">받은 편지함</a>
+            <a th:if="${#authorization.expression('!isAuthenticated()')}" th:href="@{/login}" class="btn-custom">로그인</a>
+            <a th:if="${#authorization.expression('!isAuthenticated()')}" th:href="@{/register}" class="btn-custom">회원가입</a>
+            <a th:if="${#authorization.expression('isAuthenticated()')}" th:href="@{/select}" class="btn-custom">받고 싶은 편지 선택하기</a>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <h4>나한테 편지 써줄래?</h4>
+            <ul id="letter-wish-list" class="list-group">
+                <!-- 편지희망 리스트 항목이 여기 추가될 예정 -->
+            </ul>
+        </div>
+    </div>
+
+    <div class="row mt-4" th:if="${#authorization.expression('isAuthenticated()')}">
+        <div class="col text-center">
+            <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/api/lettertype/want')
+            .then(response => response.json())
+            .then(data => {
+                const letterWishList = document.getElementById('letter-wish-list');
+                data.forEach(item => {
+                    if (item.comment !== null && item.comment !== "null") {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'list-group-item';
+                        listItem.innerHTML = `
+                            닉네임: ${item.nickname}<br>
+                            코멘트: ${item.comment}<br>
+                            카테고리: ${item.category.map(cat => {
+                                switch(cat) {
+                                    case 1: return '재밌는 얘기해 주세요';
+                                    case 2: return '위로 받고 싶어요';
+                                    case 3: return '고민 있어요 조언해 주세요';
+                                    case 4: return '아무말 대잔치';
+                                    default: return '기타';
+                                }
+                            }).join(', ')}<br>
+                            날짜: ${item.date_receive ? new Date(item.date_receive).toLocaleString() : '날짜 정보 없음'}
+                        `;
+                        listItem.addEventListener('click', function() {
+                            if (!isAuthenticated()) {
+                                window.location.href = '/login';
+                            } else {
+                                // 선택된 항목의 정보를 sessionStorage에 저장합니다.
+                                sessionStorage.setItem('selectedLetter', JSON.stringify(item));
+                                window.location.href = '/write';
+                            }
+                        });
+                        letterWishList.appendChild(listItem);
+                    }
+                });
+            });
+    });
+
+    function isAuthenticated() {
+        return document.getElementById('isAuthenticated').value === 'true';
+    }
+</script>
+
+</body>
+</html>

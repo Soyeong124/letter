@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" type="text/css" th:href="@{css/style.css}">
+</head>
+<body>
+<form th:action="@{/login}" method="post">
+    <table class = "login">
+        <tr>
+            <td class="center-text"><h2>로그인</h2></td> <!-- 가운데 정렬 클래스 추가 -->
+        </tr>
+        <tr>
+            <td>닉네임</td>
+        </tr>
+        <tr>
+            <td><input type="text" class="nickname" placeholder=" 닉네임을 입력해주세요" th:name="username" required></td>
+        </tr>
+        <tr>
+            <td>비밀번호</td>
+        </tr>
+        <tr>
+            <td><input type="password" class="password" placeholder=" 비밀번호를 입력해주세요" th:name="password" required></td>
+        </tr>
+
+<!--        불일치 에러 문구 추가-->
+        <tr>
+            <td th:if="${param.error}" style="color: red;">닉네임 또는 비밀번호가 올바르지 않습니다</td>
+        </tr>
+        <tr>
+            <td><button type="submit" class="btn">로그인하기</button></td>
+        </tr>
+        <tr>
+            <td class="join"><a th:href="@{/register}">회원가입</a></td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>

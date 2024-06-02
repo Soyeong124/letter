@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>받고 싶은 편지 선택하기</title>
+    <!-- CSS 스타일 시트 링크 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* 추가적인 스타일링은 여기에 작성 */
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-5 mb-4">받고 싶은 편지 선택하기</h1>
+    <!-- 받고 싶은 편지 유형 선택 폼 -->
+    <form id="letterTypeForm">
+        <div class="form-group">
+            <label for="emailSub">이메일로도 받을게요</label>
+            <input type="checkbox" id="emailSub" name="emailSub">
+        </div>
+        <div class="form-group">
+            <label for="email">이메일 주소:</label>
+            <input type="email" id="email" name="email" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="randomSub">랜덤편지 받을 게요</label>
+            <input type="checkbox" id="randomSub" name="randomSub">
+        </div>
+        <div class="form-group">
+            <label for="category">편지 유형 선택</label>
+            <select id="category" name="category[]" class="form-control" multiple>
+                <option value="1">재밌는 얘기해 주세요</option>
+                <option value="2">위로 받고 싶어요</option>
+                <option value="3">고민 있어요 조언해 주세요</option>
+                <option value="4">아무말 대잔치</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="comment">코멘트:</label>
+            <textarea id="comment" name="comment" class="form-control"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+    <a th:href="@{/}" class="btn btn-secondary mt-4">홈으로 돌아가기</a>
+</div>
+
+<!-- jQuery 및 Bootstrap 자바스크립트 CDN 링크 -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<!-- 폼 제출 처리를 위한 자바스크립트 코드 -->
+<script>
+    $(document).ready(function() {
+        // 사용자 정보에서 userIdx 가져오기
+        $.ajax({
+            type: 'GET',
+            url: '/api/user/idx', // 사용자 정보 API 엔드포인트 URL
+            success: function(userIdx) {
+                // 사용자의 편지 유형을 가져오는 API 호출
+                $.ajax({
+                    type: 'GET',
+                    url: `/api/lettertype/user/${userIdx}/lettertype`,
+                    success: function(letterTypes) {
+                        if (letterTypes.length > 0) {
+                            var letterType = letterTypes[0]; // 일단 첫 번째 편지 유형을 가져옵니다.
+                            // 폼의 값 설정
+                            $('#emailSub').prop('checked', letterType.user.email_sub);
+                            $('#email').val(letterType.user.email);
+                            $('#randomSub').prop('checked', letterType.user.random_sub);
+                            $('#category').val(letterType.category);
+                            $('#comment').val(letterType.comment);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('편지 유형을 가져오는데 실패했습니다.');
+                        console.error(xhr.responseText);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                // 실패 시에 처리할 작업
+                alert('사용자 정보를 가져오는데 실패했습니다.');
+                console.error(xhr.responseText); // 오류 메시지 콘솔에 출력
+            }
+        });
+
+        // 폼이 제출될 때의 이벤트 핸들러
+        $('#letterTypeForm').submit(function(event) {
+            event.preventDefault(); // 기본 동작 방지
+
+            // 사용자 정보에서 userIdx 가져오기
+            $.ajax({
+                type: 'GET',
+                url: '/api/user/idx', // 사용자 정보 API 엔드포인트 URL
+                success: function(userIdx) {
+                    // 폼 데이터 가져오기
+                    var formData = {
+                        userIdx: userIdx,
+                        emailSub: $('#emailSub').is(':checked'),
+                        email: $('#email').val(),
+                        randomSub: $('#randomSub').is(':checked'),
+                        category: $('#category').val(),
+                        comment: $('#comment').val(),
+                        dateRecieve: new Date().toISOString()
+                    };
+
+                    // JSON 문자열로 변환
+                    var jsonData = JSON.stringify(formData);
+
+                    // 서버에 데이터 전송
+                    $.ajax({
+                        type: 'PATCH',
+                        url: `/api/lettertype/change/${userIdx}`, // 변경 API 엔드포인트 URL
+                        data: jsonData, // JSON 데이터 전송
+                        contentType: 'application/json', // Content-Type 설정
+                        success: function(response) {
+                            // 성공 시에 처리할 작업
+                            alert('편지 유형이 성공적으로 저장되었습니다.');
+                            // 여기에 원하는 작업 추가
+                        },
+                        error: function(xhr, status, error) {
+                            // 실패 시에 처리할 작업
+                            alert('편지 유형 저장에 실패했습니다.');
+                            console.error(xhr.responseText); // 오류 메시지 콘솔에 출력
+                        }
+                    });
+                },
+                error: function(xhr, status, error) {
+                    // 실패 시에 처리할 작업
+                    alert('사용자 정보를 가져오는데 실패했습니다.');
+                    console.error(xhr.responseText); // 오류 메시지 콘솔에 출력
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

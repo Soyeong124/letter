@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>편지 쓰기</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="row mt-4">
+        <div class="col">
+            <!-- 클릭한 편지희망 리스트의 내용을 여기에 표시 -->
+            <div id="wish-letter-content">
+                <!-- JavaScript를 사용하여 동적으로 내용을 채웁니다. -->
+            </div>
+        </div>
+    </div>
+    <form action="/send" method="post">
+        <div class="row mt-4">
+            <div class="col">
+                <label for="recipient">To.</label>
+                <input type="text" id="recipient" name="recipient" class="form-control">
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col">
+                <label for="title">제목</label>
+                <input type="text" id="title" name="title" class="form-control">
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col">
+                <label for="content">내용</label>
+                <textarea id="content" name="content" class="form-control" rows="5"></textarea>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col">
+                <label for="sender">From.</label>
+                <input type="text" id="sender" name="sender" class="form-control">
+            </div>
+        </div>
+        <input type="hidden" id="letterTypeId" name="letterTypeId">
+        <div class="row mt-4">
+            <div class="col text-center">
+                <button type="submit" class="btn btn-primary">편지 보내기</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectedLetter = JSON.parse(sessionStorage.getItem('selectedLetter'));
+        if (selectedLetter) {
+            const wishLetterContent = document.getElementById('wish-letter-content');
+            wishLetterContent.innerHTML = `
+                닉네임: ${selectedLetter.nickname}<br>
+                코멘트: ${selectedLetter.comment}<br>
+                카테고리: ${selectedLetter.category.map(cat => {
+                    switch(cat) {
+                        case 1: return '재밌는 얘기해 주세요';
+                        case 2: return '위로 받고 싶어요';
+                        case 3: return '고민 있어요 조언해 주세요';
+                        case 4: return '아무말 대잔치';
+                        default: return '기타';
+                    }
+                }).join(', ')}<br>
+                날짜: ${selectedLetter.date_receive ? new Date(selectedLetter.date_receive).toLocaleString() : '날짜 정보 없음'}
+            `;
+            document.getElementById('letterTypeId').value = selectedLetter.idx_letterType;
+        }
+    });
+</script>
+
+</body>
+</html>
